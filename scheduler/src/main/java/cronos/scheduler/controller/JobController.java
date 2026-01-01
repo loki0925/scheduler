@@ -1,6 +1,7 @@
 package cronos.scheduler.controller;
 
 import cronos.scheduler.entity.Job;
+import cronos.scheduler.entity.enums.JobStatus;
 import cronos.scheduler.service.JobService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -91,4 +92,49 @@ public class JobController {
         return jobService.getJobsPaginated(
                 authentication.getName(), page, size, sortBy);
     }
+    // =========================
+// CANCEL JOB
+// =========================
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/{id}/cancel")
+    public Job cancelJob(@PathVariable Long id,
+                         Authentication authentication) {
+
+        return jobService.cancelJob(id, authentication.getName());
+    }
+    // =========================
+// GET JOB LOGS
+// =========================
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/{id}/logs")
+    public Page<?> getJobLogs(@PathVariable Long id,
+                              @RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "10") int size,
+                              Authentication authentication) {
+
+        return jobService.getJobLogs(id, authentication.getName(), page, size);
+    }
+
+    // =========================
+// GET JOBS BY STATUS
+// =========================
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/status/{status}")
+    public List<Job> getJobsByStatus(@PathVariable JobStatus status,
+                                     Authentication authentication) {
+
+        return jobService.getJobsByStatus(status, authentication.getName());
+    }
+
+    // =========================
+// JOB STATISTICS
+// =========================
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/statistics")
+    public Object getJobStatistics(Authentication authentication) {
+
+        return jobService.getJobStatistics(authentication.getName());
+    }
+
+
 }
