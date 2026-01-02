@@ -1,10 +1,15 @@
 package cronos.scheduler.service;
 
 
+import cronos.scheduler.entity.ExecutionLog;
 import cronos.scheduler.entity.Job;
 import cronos.scheduler.entity.enums.JobStatus;
+import cronos.scheduler.entity.enums.JobType;
 import cronos.scheduler.repo.ExecutionLogRepository;
 import cronos.scheduler.repo.JobRepo;
+import jakarta.transaction.Transactional;
+import org.hibernate.type.internal.ParameterizedTypeImpl;
+import org.quartz.SchedulerException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -12,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,17 +29,25 @@ public class JobService {
 
     private final ExecutionLogRepository executionLogRepository;
 
-    public JobService(JobRepo jobRepository, ExecutionLogRepository executionLogRepository) {
+    private final JobSchedulerService jobSchedulerService;
+
+    public JobService(JobRepo jobRepository, ExecutionLogRepository executionLogRepository, JobSchedulerService jobSchedulerService) {
         this.jobRepository = jobRepository;
         this.executionLogRepository = executionLogRepository;
+        this.jobSchedulerService = jobSchedulerService;
     }
 
-    public Job createJob(Job job) {
+    public Job createJob(Job job) throws SchedulerException {
         String username = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName();
 
         job.setCreatedBy(username);
+        Job savedJob = jobRepository.save(job);
+
+        if (job.getJobType() == JobType.ONE_TIME) {
+            jobSchedulerService.scheduleOneTimeJob(savedJob);
+        }
         return jobRepository.save(job);
     }
 
@@ -134,4 +148,38 @@ public class JobService {
 
         return stats;
     }
+    @Transactional
+    public void executeJob(Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        job.setStatus(JobStatus.RUNNING);
+        job.setStartedAt(LocalDateTime.now());
+        jobRepository.save(job);
+
+        ExecutionLog log = new ExecutionLog();
+        log.setJob(job);
+        log.setStartedAt(LocalDateTime.now());
+
+        try {
+            // 🔥 YOUR BUSINESS LOGIC
+            System.out.println("Executing payload: " + job.getPayload());
+
+            job.setStatus(JobStatus.COMPLETED);
+            job.setCompletedAt(LocalDateTime.now());
+
+            log.setStatus(JobStatus.valueOf("SUCCESS"));
+        } catch (Exception e) {
+            job.setStatus(JobStatus.FAILED);
+            job.setErrorMessage(e.getMessage());
+
+            log.setStatus(JobStatus.valueOf("FAILED"));
+            log.setErrorMessage(e.getMessage());
+        }
+
+        log.setEndedAt(LocalDateTime.now());
+        executionLogRepository.save(log);
+        jobRepository.save(job);
+    }
+
 }

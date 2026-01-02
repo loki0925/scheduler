@@ -2,14 +2,21 @@ package cronos.scheduler.entity;
 
 
 
+import cronos.scheduler.entity.enums.JobStatus;
 import cronos.scheduler.entity.enums.LogLevel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "execution_logs")
+@Getter
+@Setter
+@AllArgsConstructor
+@Builder
 public class ExecutionLog {
 
     @Id
@@ -43,6 +50,20 @@ public class ExecutionLog {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    // RUNNING / COMPLETED / FAILED
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private JobStatus status;
+
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "ended_at")
+    private LocalDateTime endedAt;
+
+    @Column(name = "error_message", columnDefinition = "TEXT")
+    private String errorMessage;
 
     // Constructors
     public ExecutionLog() {

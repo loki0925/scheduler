@@ -4,6 +4,7 @@ import cronos.scheduler.entity.Job;
 import cronos.scheduler.entity.enums.JobStatus;
 import cronos.scheduler.service.JobService;
 import jakarta.validation.Valid;
+import org.quartz.SchedulerException;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -27,7 +28,7 @@ public class JobController {
     @PreAuthorize("hasRole('USER')")
     @PostMapping
     public Job createJob(@RequestBody @Valid Job job,
-                         Authentication authentication) {
+                         Authentication authentication) throws SchedulerException {
 
 
         job.setCreatedBy(authentication.getName());
