@@ -33,6 +33,12 @@ public class JobController {
 
         job.setCreatedBy(authentication.getName());
 
+        job.setJobType(job.getJobType());
+        job.setRecurrenceRule(job.getRecurrenceRule());
+        job.setPayload(job.getPayload());
+
+        Job savedJob = jobService.createJob(job);
+
         return jobService.createJob(job);
     }
 

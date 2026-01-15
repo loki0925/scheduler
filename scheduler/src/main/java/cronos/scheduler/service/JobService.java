@@ -45,7 +45,14 @@ public class JobService {
         job.setCreatedBy(username);
         Job savedJob = jobRepository.save(job);
 
-        if (job.getJobType() == JobType.ONE_TIME) {
+        if (savedJob.getRecurrenceRule() != null) {
+            // Recurring job (EMAIL at 8 PM)
+            jobSchedulerService.scheduleRecurringJob(
+                    savedJob,
+                    savedJob.getRecurrenceRule()
+            );
+        } else {
+            // One-time job
             jobSchedulerService.scheduleOneTimeJob(savedJob);
         }
         return jobRepository.save(job);

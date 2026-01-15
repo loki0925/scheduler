@@ -1,6 +1,7 @@
 package cronos.scheduler.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import cronos.scheduler.dto.EmailPayload;
 import cronos.scheduler.entity.enums.JobStatus;
 import cronos.scheduler.entity.enums.JobType;
 import jakarta.persistence.*;
@@ -88,6 +89,11 @@ public class Job {
     @JsonManagedReference
     private JobSchedule jobSchedule;
 
+
+    private String recurrenceRule;
+
+
+
     /* ===============================
        JPA LIFECYCLE HOOKS
        =============================== */
@@ -102,4 +108,6 @@ public class Job {
     public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+
 }
