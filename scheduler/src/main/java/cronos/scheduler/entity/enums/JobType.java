@@ -7,7 +7,7 @@ public enum JobType {
     EMAIL("For email job"),
     HTTP("For http job"),
     SCRIPT("For script job"),
-
+    DUMMY("For dummy job"),
     DATABASE("For database job"),
     FILE_SYSTEM("For file system job"),
     MESSAGE_QUEUE("Message queue"),

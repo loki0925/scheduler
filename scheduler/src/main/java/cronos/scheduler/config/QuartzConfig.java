@@ -11,11 +11,13 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 public class QuartzConfig {
 
     @Bean
-    public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource) {
+    public SchedulerFactoryBean schedulerFactoryBean(
+            AutowiringSpringBeanJobFactory jobFactory) {
+
         SchedulerFactoryBean factory = new SchedulerFactoryBean();
-        factory.setDataSource(dataSource);
-        factory.setOverwriteExistingJobs(true);
+        factory.setJobFactory(jobFactory);
         factory.setAutoStartup(true);
+        factory.setWaitForJobsToCompleteOnShutdown(true);
         return factory;
     }
 

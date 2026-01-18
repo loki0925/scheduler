@@ -21,6 +21,7 @@ public class EmailJobExecutor {
                 objectMapper.readValue(job.getPayload(), EmailPayload.class);
 
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("noreply@chronosapp.in");
         message.setTo(payload.getTo().toArray(new String[0]));
         message.setSubject(payload.getSubject());
         message.setText(payload.getBody());

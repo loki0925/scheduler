@@ -4,6 +4,7 @@ import cronos.scheduler.entity.ExecutionLog;
 import cronos.scheduler.entity.Job;
 import cronos.scheduler.entity.JobEvent;
 import cronos.scheduler.entity.enums.JobStatus;
+import cronos.scheduler.entity.enums.LogLevel;
 import cronos.scheduler.executor.JobExecutorFactory;
 import cronos.scheduler.service.JobEventProducer;
 import cronos.scheduler.entity.JobEvent;
@@ -39,10 +40,11 @@ public class QuartzJobExecutor implements org.quartz.Job {
         log.setJob(job);
         log.setStartedAt(LocalDateTime.now());
         log.setStatus(JobStatus.RUNNING);
+        log.setLogLevel(LogLevel.INFO);
         executionLogRepository.save(log);
 
         // 📣 Publish JOB_STARTED event
-        jobEventProducer.publish(buildEvent(job, "JOB_STARTED", null));
+        //jobEventProducer.publish(buildEvent(job, "JOB_STARTED", null));
 
         try {
             // 🔥 ACTUAL JOB LOGIC
@@ -53,7 +55,7 @@ public class QuartzJobExecutor implements org.quartz.Job {
             log.setStatus(JobStatus.COMPLETED);
 
             // 📣 Publish JOB_COMPLETED event
-            jobEventProducer.publish(buildEvent(job, "JOB_COMPLETED", null));
+            //jobEventProducer.publish(buildEvent(job, "JOB_COMPLETED", null));
 
         } catch (Exception e) {
 
@@ -62,7 +64,7 @@ public class QuartzJobExecutor implements org.quartz.Job {
             log.setErrorMessage(e.getMessage());
 
             // 📣 Publish JOB_FAILED event
-            jobEventProducer.publish(buildEvent(job, "JOB_FAILED", e.getMessage()));
+          //  jobEventProducer.publish(buildEvent(job, "JOB_FAILED", e.getMessage()));
 
             throw new JobExecutionException(e, true); // 🔁 Quartz retry
 
